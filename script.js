@@ -949,19 +949,31 @@ async function loadObras() {
 
     galleryGrid.innerHTML = '';
 
-    obras.forEach(obra => {
-      // Simular altura para efecto masonry
-      const height = 140 + Math.random() * 80;
+    const styleMap = {
+      'impresionismo': 'st-imp',
+      'remolinos': 'st-vg',
+      'acuarela': 'st-wc',
+      'cubismo': 'st-cb',
+      'fantasía': 'st-fa',
+      'fantasia': 'st-fa',
+    };
 
+    obras.forEach(obra => {
       const card = document.createElement('div');
       card.className = 'gal-card';
-      card.style.height = height + 'px';
       card.onclick = () => openGalleryArtwork(obra);
 
+      const estilo = (obra.estilo || '').toLowerCase();
+      const stClass = styleMap[estilo] || 'st-imp';
+
       card.innerHTML = `
-        <div style="position:absolute;inset:0;width:100%;height:100%;background-image:url('${obra.imagen_url}');background-size:cover;background-position:center;border-radius:var(--r-md);"></div>
-        <div class="gal-card-overlay">
+        <div class="gal-thumb" style="background-image:url('${obra.imagen_url}');background-size:cover;background-position:center;">
+          <div class="gal-fav"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21l-8.5-8.5a5 5 0 0 1 7.07-7.07L12 7l1.43-1.57a5 5 0 0 1 7.07 7.07L12 21z"/></svg></div>
+        </div>
+        <div class="gal-info">
           <strong>${obra.nombre}</strong>
+          <span>${obra.autor || 'Anónimo'}</span>
+          <div class="style-tag ${stClass}">${obra.estilo || ''}</div>
         </div>
       `;
       galleryGrid.appendChild(card);

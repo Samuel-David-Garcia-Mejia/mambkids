@@ -2011,9 +2011,11 @@ svg {
   box-shadow: 0 2px 10px rgba(28, 27, 46, .07);
   cursor: pointer;
   transition: transform .2s var(--ease-spring), box-shadow .2s;
+  touch-action: manipulation;
 }
 
-.gal-card:hover {
+.gal-card:hover,
+.gal-card:focus {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(28, 27, 46, .14);
 }
@@ -2023,7 +2025,9 @@ svg {
 }
 
 .gal-thumb {
+  width: 100%;
   aspect-ratio: 1;
+  min-height: 130px;
   position: relative;
 }
 

@@ -127,13 +127,13 @@ const ARTISTS = {
 };
 
 // ── NAVIGATION ────────────────────────────────────
-function nav(targetId) {
+function nav(targetId, skipHistory) {
   const current = document.querySelector('.screen.active');
   const target = document.getElementById(targetId);
   if (!target || !current || current.id === targetId) return;
 
   // History
-  if (APP.currentScreen !== targetId) {
+  if (!skipHistory && APP.currentScreen !== targetId) {
     APP.history.push(APP.currentScreen);
   }
 
@@ -150,7 +150,7 @@ function nav(targetId) {
 
 function goBack() {
   const prev = APP.history.pop();
-  if (prev) nav(prev);
+  if (prev) nav(prev, true);
 }
 
 function onScreenEnter(id) {
@@ -933,7 +933,8 @@ async function loadObras() {
   const galleryGrid = document.querySelector('#s-gallery .gallery-grid');
   if (!galleryGrid) return;
 
-  galleryGrid.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--ink-faint); grid-column: 1/-1;">Cargando obras...</div>';
+  // Remove previously loaded dynamic cards (identified by data-dynamic)
+  galleryGrid.querySelectorAll('[data-dynamic]').forEach(el => el.remove());
 
   try {
     const { data: obras, error } = await window.supabaseClient.from('obras')
@@ -942,12 +943,7 @@ async function loadObras() {
 
     if (error) throw error;
 
-    if (!obras || obras.length === 0) {
-      galleryGrid.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--ink-faint); grid-column: 1/-1;">Aún no hay obras. ¡Crea la tuya!</div>';
-      return;
-    }
-
-    galleryGrid.innerHTML = '';
+    if (!obras || obras.length === 0) return;
 
     const styleMap = {
       'impresionismo': 'st-imp',
@@ -961,10 +957,12 @@ async function loadObras() {
     obras.forEach(obra => {
       const card = document.createElement('div');
       card.className = 'gal-card';
+      card.setAttribute('data-dynamic', '');
       card.onclick = () => openGalleryArtwork(obra);
 
       const estilo = (obra.estilo || '').toLowerCase();
       const stClass = styleMap[estilo] || 'st-imp';
+      const autor = obra.autor || 'Anónimo';
 
       card.innerHTML = `
         <div class="gal-thumb" style="background-image:url('${obra.imagen_url}');background-size:cover;background-position:center;">
@@ -972,7 +970,7 @@ async function loadObras() {
         </div>
         <div class="gal-info">
           <strong>${obra.nombre}</strong>
-          <span>${obra.autor || 'Anónimo'}</span>
+          <span>${autor}</span>
           <div class="style-tag ${stClass}">${obra.estilo || ''}</div>
         </div>
       `;
@@ -981,7 +979,6 @@ async function loadObras() {
 
   } catch (err) {
     console.error("Error loading obras:", err);
-    galleryGrid.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--coral); grid-column: 1/-1;">Error al cargar las obras</div>';
   }
 }
 

@@ -302,7 +302,8 @@
         </div>
         <!-- Viewfinder -->
         <div class="viewfinder" id="vf">
-          <video id="camera-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:-1;"></video>
+          <video id="camera-video" autoplay playsinline muted
+            style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"></video>
           <canvas id="camera-canvas" style="display:none;"></canvas>
           <input type="file" id="camera-file-input" accept="image/*" capture="environment" style="display:none">
           <div class="vf-grid">
@@ -410,13 +411,16 @@
 
           <div class="form-group">
             <label class="form-label">Nombre de tu obra</label>
-            <input class="form-input" type="text" id="obra-nombre" placeholder="Ej: Mi perro azul" oninput="triggerAutosave()">
+            <input class="form-input" type="text" id="obra-nombre" placeholder="Ej: Mi perro azul"
+              oninput="triggerAutosave()">
             <div class="autosave-indicator" id="autosave-ind">Guardado automáticamente</div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Describe tu obra</label>
-            <textarea class="form-input" id="obra-descripcion" placeholder="Ej: Es un perro azul saltando en el pasto..." rows="3" style="resize:none; padding-top:1rem;"></textarea>
+            <textarea class="form-input" id="obra-descripcion"
+              placeholder="Ej: Es un perro azul saltando en el pasto..." rows="3"
+              style="resize:none; padding-top:1rem;"></textarea>
           </div>
 
           <div class="form-group">
@@ -605,7 +609,8 @@
       <section class="screen" id="s-result">
         <div class="result-fs" id="result-fs">
           <!-- AI artwork fills screen -->
-          <canvas id="result-canvas" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></canvas>
+          <canvas id="result-canvas"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></canvas>
           <!-- Info bar -->
           <div class="result-info-bar">
             <div class="result-info-text">
@@ -670,12 +675,17 @@
 ──────────────────────────────────────────────── -->
       <section class="screen" id="s-gallery-viewer" style="background:#000;">
         <div class="result-fs">
-          <button class="icon-btn light" style="position:absolute; top: var(--s4); left: var(--s4); z-index: 60; background: rgba(0,0,0,0.4);" onclick="nav('s-gallery')">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <button class="icon-btn light"
+            style="position:absolute; top: var(--s4); left: var(--s4); z-index: 60; background: rgba(0,0,0,0.4);"
+            onclick="nav('s-gallery')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
-          <div id="gv-img" style="width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;"></div>
+          <div id="gv-img"
+            style="width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;">
+          </div>
           <div class="result-info-bar">
             <div class="result-info-text">
               <h3 id="gv-title">Título</h3>
@@ -1048,17 +1058,20 @@
           <div style="padding: var(--s4) var(--s5); text-align: center;">
             <div class="mad-av" id="sad-av" style="margin: 0 auto var(--s3) auto;"></div>
             <h3 id="sad-name" style="margin-bottom: var(--s1);"></h3>
-            <span class="mad-origin" id="sad-origin" style="display:block; margin-bottom: var(--s3); font-size: 0.85rem; color: var(--ink-soft);"></span>
-            <p class="mad-bio" id="sad-bio" style="text-align: left; line-height: 1.5; color: var(--ink-light); margin-bottom: var(--s4);"></p>
+            <span class="mad-origin" id="sad-origin"
+              style="display:block; margin-bottom: var(--s3); font-size: 0.85rem; color: var(--ink-soft);"></span>
+            <p class="mad-bio" id="sad-bio"
+              style="text-align: left; line-height: 1.5; color: var(--ink-light); margin-bottom: var(--s4);"></p>
             <div class="fun-fact-card" style="margin-top: var(--s4); text-align: left;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" opacity=".6">
-                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                <polygon
+                  points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
               </svg>
               <div><strong>Dato curioso</strong>
                 <p id="sad-fact"></p>
               </div>
             </div>
-            
+
             <h4 style="text-align: left; margin: var(--s5) 0 var(--s3); font-size: 1.1rem;">Obras Destacadas</h4>
             <div id="sad-carousel" class="artist-works-carousel">
               <!-- Artworks will be populated here -->

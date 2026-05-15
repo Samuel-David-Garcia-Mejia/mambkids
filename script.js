@@ -161,7 +161,7 @@ function onScreenEnter(id) {
     case 's-camera': initCamera(); break;
     case 's-gallery': loadObras(); break;
   }
-  
+
   if (id !== 's-camera') {
     stopCamera();
   }
@@ -178,6 +178,7 @@ async function initCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     cameraStream = stream;
     video.srcObject = stream;
+    video.play();
   } catch (err) {
     console.error("Camera error:", err);
     // Fallback: open native camera via file input on mobile
@@ -200,21 +201,21 @@ function takePhoto() {
   const video = document.getElementById('camera-video');
   const canvas = document.getElementById('camera-canvas');
   if (!video || !canvas) return;
-  
+
   // Set canvas to video size
   canvas.width = video.videoWidth || 640;
   canvas.height = video.videoHeight || 480;
-  
+
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
+
   capturedImageData = canvas.toDataURL('image/jpeg', 0.8);
-  
+
   const previewImg = document.getElementById('preview-img');
   if (previewImg) {
     previewImg.src = capturedImageData;
   }
-  
+
   nav('s-preview');
 }
 
@@ -269,20 +270,20 @@ function startProcessingAnim() {
 function applyAIFilter() {
   const resultCanvas = document.getElementById('result-canvas');
   if (!resultCanvas || !capturedImageData) return;
-  
+
   const ctx = resultCanvas.getContext('2d');
   const img = new Image();
   img.onload = () => {
     resultCanvas.width = img.width;
     resultCanvas.height = img.height;
-    
+
     // Configurar filtros según estilo
     const styleEl = document.querySelector('.style-card.selected');
     const styleId = styleEl ? styleEl.dataset.style : 'impresionismo';
     const styleName = styleEl ? styleEl.querySelector('strong').textContent : 'Impresionismo';
-    
+
     ctx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
-    
+
     // Filtros IA simulados usando CSS context filters
     if (styleId === 'impresionismo') {
       ctx.filter = 'saturate(1.5) contrast(1.2) brightness(1.1) blur(1px)';
@@ -298,10 +299,10 @@ function applyAIFilter() {
     } else if (styleId === 'fantasia') {
       ctx.filter = 'hue-rotate(90deg) saturate(3) contrast(1.2)';
     }
-    
+
     ctx.drawImage(img, 0, 0);
     ctx.filter = 'none'; // reset
-    
+
     // Pixelación manual para puntillismo o cubismo si se quiere
     if (styleId === 'cubismo' || styleId === 'puntillismo') {
       const size = styleId === 'cubismo' ? 0.1 : 0.05;
@@ -311,7 +312,7 @@ function applyAIFilter() {
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(resultCanvas, 0, 0, w, h, 0, 0, resultCanvas.width, resultCanvas.height);
     }
-    
+
     // Actualizar Textos
     const nombre = document.getElementById('obra-nombre').value;
     document.getElementById('result-nombre').textContent = nombre;
@@ -730,14 +731,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateUserUI(user) {
   console.log("Updating UI for user:", user);
   if (!user) return;
-  
+
   // Extraer datos del metadata, con valores por defecto si no existen
   const meta = user.user_meta_data || {};
   const nombre = meta.nombre || user.email.split('@')[0]; // Fallback al email
-  
+
   // Si la cuenta es antigua y no tiene avatar guardado, le generamos uno automáticamente con su nombre
   const avatar = meta.avatar || `https://api.dicebear.com/9.x/micah/svg?seed=${nombre}&backgroundColor=bde0fe`;
-  
+
   // 1. Actualizar el recuadro rojo en la pantalla de inicio (top right badge)
   const homeAuthArea = document.getElementById('home-auth-area');
   if (homeAuthArea) {
@@ -861,41 +862,41 @@ async function saveObra() {
     showToast("Debes iniciar sesión para guardar");
     return;
   }
-  
+
   const resultCanvas = document.getElementById('result-canvas');
   if (!resultCanvas) return;
-  
+
   showToast("Guardando tu obra...", 10000);
-  
+
   try {
     // 1. Obtener imagen base64
     const base64Data = resultCanvas.toDataURL('image/jpeg', 0.85);
     // Convertir a blob
     const res = await fetch(base64Data);
     const blob = await res.blob();
-    
+
     // 2. Subir a Storage
     const fileName = `${session.user.id}/${Date.now()}.jpg`;
     const { data: storageData, error: uploadError } = await window.supabaseClient.storage
       .from('obras_bucket')
       .upload(fileName, blob, { contentType: 'image/jpeg' });
-      
+
     if (uploadError) throw uploadError;
-    
+
     // Obtener URL pública
     const { data: { publicUrl } } = window.supabaseClient.storage
       .from('obras_bucket')
       .getPublicUrl(fileName);
-      
+
     // 3. Guardar en tabla obras
     const nombre = document.getElementById('obra-nombre').value || 'Sin nombre';
     const desc = document.getElementById('obra-descripcion').value || '';
     const styleEl = document.querySelector('.style-card.selected');
     const estilo = styleEl ? styleEl.dataset.style : 'impresionismo';
-    
+
     const { error: dbError } = await window.supabaseClient.from('obras')
       .insert([
-        { 
+        {
           user_id: session.user.id,
           nombre: nombre,
           descripcion: desc,
@@ -903,9 +904,9 @@ async function saveObra() {
           imagen_url: publicUrl
         }
       ]);
-      
+
     if (dbError) throw dbError;
-    
+
     showToast("¡Obra guardada con éxito!");
     closeDrawer();
     nav('s-gallery');
@@ -918,32 +919,32 @@ async function saveObra() {
 async function loadObras() {
   const galleryGrid = document.querySelector('#s-gallery .gallery-grid');
   if (!galleryGrid) return;
-  
+
   galleryGrid.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--ink-faint); grid-column: 1/-1;">Cargando obras...</div>';
-  
+
   try {
     const { data: obras, error } = await window.supabaseClient.from('obras')
       .select('*')
       .order('created_at', { ascending: false });
-      
+
     if (error) throw error;
-    
+
     if (!obras || obras.length === 0) {
       galleryGrid.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--ink-faint); grid-column: 1/-1;">Aún no hay obras. ¡Crea la tuya!</div>';
       return;
     }
-    
+
     galleryGrid.innerHTML = '';
-    
+
     obras.forEach(obra => {
       // Simular altura para efecto masonry
       const height = 140 + Math.random() * 80;
-      
+
       const card = document.createElement('div');
       card.className = 'gal-card';
       card.style.height = height + 'px';
       card.onclick = () => openGalleryArtwork(obra.nombre, 'Autor', obra.estilo);
-      
+
       card.innerHTML = `
         <div style="position:absolute;inset:0;width:100%;height:100%;background-image:url('${obra.imagen_url}');background-size:cover;background-position:center;border-radius:var(--r-md);"></div>
         <div class="gal-card-overlay">
@@ -952,7 +953,7 @@ async function loadObras() {
       `;
       galleryGrid.appendChild(card);
     });
-    
+
   } catch (err) {
     console.error("Error loading obras:", err);
     galleryGrid.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--coral); grid-column: 1/-1;">Error al cargar las obras</div>';

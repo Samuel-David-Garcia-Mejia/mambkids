@@ -137,7 +137,6 @@ svg {
   background: var(--bg);
   padding-top: 30px;
   /* notch clearance */
-  will-change: transform;
 }
 
 .screen.active {
@@ -1241,8 +1240,17 @@ svg {
 .viewfinder {
   flex: 1;
   background: #0A0A0A;
-  position: relative;
+  display: grid;
   overflow: hidden;
+  position: relative;
+}
+
+#camera-video {
+  grid-area: 1/1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .vf-grid {

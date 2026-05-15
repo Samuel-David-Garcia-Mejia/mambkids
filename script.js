@@ -158,7 +158,7 @@ function onScreenEnter(id) {
     case 's-processing': startProcessingAnim(); break;
     case 's-result': resetResultDrawer(); break;
     case 's-tutorial': resetTutorial(); break;
-    case 's-camera': initCamera(); break;
+    case 's-camera': setTimeout(initCamera, 300); break;
     case 's-gallery': loadObras(); break;
   }
 
@@ -178,6 +178,7 @@ async function initCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     cameraStream = stream;
     video.srcObject = stream;
+    video.setAttribute('playsinline', '');
     video.play();
   } catch (err) {
     console.error("Camera error:", err);

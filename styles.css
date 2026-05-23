@@ -157,7 +157,7 @@ svg {
 }
 
 .bottom-space {
-  height: calc(var(--tab-h) + 1.5rem);
+  height: calc(var(--tab-h) + 1.5rem + env(safe-area-inset-bottom));
 }
 
 /* ── SCREEN HEADER ──────────────────────────────── */
@@ -258,12 +258,12 @@ svg {
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--tab-h);
+  height: calc(var(--tab-h) + env(safe-area-inset-bottom));
   background: var(--surface);
   border-top: 1.5px solid var(--border);
   display: flex;
   align-items: flex-start;
-  padding: .5rem 0 .25rem;
+  padding: .5rem 0 calc(.25rem + env(safe-area-inset-bottom));
   z-index: 100;
 }
 
@@ -1913,6 +1913,26 @@ svg {
   flex-direction: column;
   gap: .65rem;
   margin-bottom: .75rem;
+}
+
+.drawer .btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+/* Drawer backdrop */
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .45);
+  z-index: 49;
+  display: none;
+}
+
+.drawer-backdrop.open {
+  display: block;
 }
 
 .da-btn {

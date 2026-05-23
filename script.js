@@ -16,6 +16,7 @@ const APP = {
   favActive: false,
   flashActive: false,
   autosaveTimer: null,
+  currentUserId: null,
 };
 
 // ── TUTORIAL DATA ─────────────────────────────────
@@ -164,6 +165,9 @@ function onScreenEnter(id) {
 
   if (id !== 's-camera') {
     stopCamera();
+  }
+  if (id !== 's-game') {
+    if (typeof stopGame === 'function') stopGame();
   }
 }
 
@@ -345,10 +349,12 @@ function updateStepsUI(val) {
 // ── RESULT DRAWER ─────────────────────────────────
 function openDrawer() {
   document.getElementById('result-drawer')?.classList.add('open');
+  document.getElementById('result-drawer-backdrop')?.classList.add('open');
   document.getElementById('tap-hint')?.style && (document.getElementById('tap-hint').style.display = 'none');
 }
 function closeDrawer() {
   document.getElementById('result-drawer')?.classList.remove('open');
+  document.getElementById('result-drawer-backdrop')?.classList.remove('open');
   document.getElementById('tap-hint') && (document.getElementById('tap-hint').style.display = '');
 }
 function resetResultDrawer() {
@@ -462,6 +468,43 @@ function selectAvatar(btn, seed) {
 function activateFilter(chip) {
   chip.closest('.filter-strip').querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
+
+  filterGallery(chip.textContent.trim());
+}
+
+function filterGallery(filter) {
+  const galleryGrid = document.querySelector('#s-gallery .gallery-grid');
+  if (!galleryGrid) return;
+
+  const cards = galleryGrid.querySelectorAll('.gal-card');
+
+  const styleFilterMap = {
+    'Impresionismo': ['impresionismo'],
+    'Remolinos': ['remolinos', 'vangogh'],
+    'Acuarela': ['acuarela'],
+    'Cubismo': ['cubismo'],
+    'Puntillismo': ['puntillismo'],
+    'Fantasía': ['fantasía', 'fantasia'],
+  };
+
+  cards.forEach(card => {
+    if (filter === 'Todas') {
+      card.style.display = '';
+      return;
+    }
+
+    if (filter === 'Mis obras') {
+      const uid = card.getAttribute('data-user-id');
+      card.style.display = uid && uid === APP.currentUserId ? '' : 'none';
+      return;
+    }
+
+    const styleTag = card.querySelector('.style-tag');
+    if (!styleTag) { card.style.display = 'none'; return; }
+    const cardStyle = styleTag.textContent.trim().toLowerCase();
+    const matches = styleFilterMap[filter] || [filter.toLowerCase()];
+    card.style.display = matches.includes(cardStyle) ? '' : 'none';
+  });
 }
 
 // ── FLASH TOGGLE ──────────────────────────────────
@@ -663,7 +706,7 @@ const _SCREEN_NAMES = {
   's-gallery': 'Galeria', 's-artists': 'Artistas', 's-programs': 'Programas',
   's-about': 'Acerca del MAMB', 's-events': 'Eventos', 's-profile': 'Perfil',
   's-login': 'Login', 's-signup': 'Crear cuenta', 's-tutorial': 'Tutorial',
-  's-states': 'Estados UI',
+  's-states': 'Estados UI', 's-game': 'Jugar',
 };
 function showScreenBadge(id) {
   const name = _SCREEN_NAMES[id];
@@ -740,13 +783,113 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('%c Usa el boton menu (abajo derecha) para navegar entre pantallas ', 'color:#888;font-size:11px;');
 });
 
+// ── GAME LOGIC (TEACHABLE MACHINE) ────────────────
+const GAME_URL = "https://teachablemachine.withgoogle.com/models/WOCXLX73G/";
+let gameModel, gameWebcam, gameCtx, gameMaxPredictions;
+let isGameRunning = false;
+
+async function initGame() {
+  if (isGameRunning) return;
+
+  document.getElementById("btn-init-game").style.display = "none";
+  document.getElementById("game-video-container").style.display = "flex";
+  document.getElementById("game-resultado").textContent = "Cargando modelo de IA...";
+
+  try {
+    const modelURL = GAME_URL + "model.json";
+    const metadataURL = GAME_URL + "metadata.json";
+
+    gameModel = await tmPose.load(modelURL, metadataURL);
+    gameMaxPredictions = gameModel.getTotalClasses();
+
+    const size = 300;
+    const flip = true;
+    gameWebcam = new tmPose.Webcam(size, size, flip);
+
+    await gameWebcam.setup();
+    await gameWebcam.play();
+
+    isGameRunning = true;
+    window.requestAnimationFrame(loopGame);
+
+    const canvas = document.getElementById("game-canvas");
+    canvas.width = size;
+    canvas.height = size;
+    gameCtx = canvas.getContext("2d");
+
+    document.getElementById("game-resultado").textContent = "¡Muestra Piedra, Papel o Tijera a la cámara!";
+  } catch (e) {
+    console.error("Error al iniciar el juego", e);
+    document.getElementById("game-resultado").textContent = "Error al acceder a la cámara";
+    document.getElementById("btn-init-game").style.display = "inline-flex";
+  }
+}
+
+async function loopGame() {
+  if (!isGameRunning) return;
+  gameWebcam.update();
+  await predictGame();
+  window.requestAnimationFrame(loopGame);
+}
+
+async function predictGame() {
+  if (!gameModel || !gameWebcam || !gameWebcam.canvas) return;
+  const { pose, posenetOutput } = await gameModel.estimatePose(gameWebcam.canvas);
+  const prediction = await gameModel.predict(posenetOutput);
+
+  let maxProb = 0;
+  let bestClass = "";
+
+  for (let i = 0; i < gameMaxPredictions; i++) {
+    if (prediction[i].probability > maxProb) {
+      maxProb = prediction[i].probability;
+      bestClass = prediction[i].className;
+    }
+  }
+
+  if (maxProb > 0.8) {
+    document.getElementById("game-resultado").textContent = `Has elegido: ${bestClass}`;
+  } else {
+    document.getElementById("game-resultado").textContent = "Moviendo...";
+  }
+
+  drawPoseGame(pose);
+}
+
+function drawPoseGame(pose) {
+  if (gameWebcam.canvas) {
+    gameCtx.drawImage(gameWebcam.canvas, 0, 0);
+    if (pose) {
+      const minPartConfidence = 0.5;
+      tmPose.drawKeypoints(pose.keypoints, minPartConfidence, gameCtx);
+      tmPose.drawSkeleton(pose.keypoints, minPartConfidence, gameCtx);
+    }
+  }
+}
+
+function stopGame() {
+  isGameRunning = false;
+  if (gameWebcam) {
+    gameWebcam.stop();
+    gameWebcam = null;
+  }
+  const btn = document.getElementById("btn-init-game");
+  if (btn) btn.style.display = "inline-flex";
+  const container = document.getElementById("game-video-container");
+  if (container) container.style.display = "none";
+  const res = document.getElementById("game-resultado");
+  if (res) res.textContent = "";
+}
+
+
 // ── SUPABASE UI UPDATES ───────────────────────────
 function updateUserUI(user) {
   console.log("Updating UI for user:", user);
   if (!user) return;
+  APP.currentUserId = user.id;
 
-  // Extraer datos del metadata, con valores por defecto si no existen
-  const meta = user.user_meta_data || {};
+  // Extraer datos del metadata (Supabase usa user_metadata en v2)
+  const meta = user.user_metadata || user.user_meta_data || {};
   const nombre = meta.nombre || user.email.split('@')[0]; // Fallback al email
 
   // Si la cuenta es antigua y no tiene avatar guardado, le generamos uno automáticamente con su nombre
@@ -768,6 +911,7 @@ function updateUserUI(user) {
   // 2. Actualizar todos los botones "Perfil" en las barras inferiores (tab-bar)
   document.querySelectorAll("button[onclick=\"nav('s-profile')\"]").forEach(btn => {
     const svg = btn.querySelector('svg');
+    const existingImg = btn.querySelector('img');
     if (svg) {
       const img = document.createElement('img');
       img.src = avatar;
@@ -777,6 +921,8 @@ function updateUserUI(user) {
       img.style.objectFit = 'cover';
       img.style.border = '2px solid var(--ink)';
       svg.replaceWith(img);
+    } else if (existingImg) {
+      existingImg.src = avatar;
     }
     const span = btn.querySelector('span');
     if (span) {
@@ -862,7 +1008,19 @@ async function handleSignup() {
     } else {
       showToast('Error al crear la cuenta: ' + error.message);
     }
-  } else {
+  } else if (data.user) {
+    // Create profile in perfiles table
+    const { error: perfilError } = await window.supabaseClient.from('perfiles')
+      .insert([
+        {
+          id: data.user.id,
+          nombre: nombre,
+          colegio: colegio,
+          grado: grado,
+          avatar: avatar
+        }
+      ]);
+    if (perfilError) console.error('Error creating profile:', perfilError);
     showToast('¡Cuenta creada con éxito!');
     openModal('m-welcome');
   }
@@ -945,6 +1103,16 @@ async function loadObras() {
 
     if (!obras || obras.length === 0) return;
 
+    // Fetch user display names from perfiles table
+    const userIds = [...new Set(obras.map(o => o.user_id).filter(Boolean))];
+    const userMap = {};
+    if (userIds.length > 0) {
+      const { data: perfiles } = await window.supabaseClient.from('perfiles')
+        .select('id, nombre')
+        .in('id', userIds);
+      if (perfiles) perfiles.forEach(p => userMap[p.id] = p.nombre);
+    }
+
     const styleMap = {
       'impresionismo': 'st-imp',
       'remolinos': 'st-vg',
@@ -958,11 +1126,12 @@ async function loadObras() {
       const card = document.createElement('div');
       card.className = 'gal-card';
       card.setAttribute('data-dynamic', '');
+      card.setAttribute('data-user-id', obra.user_id || '');
       card.onclick = () => openGalleryArtwork(obra);
 
       const estilo = (obra.estilo || '').toLowerCase();
       const stClass = styleMap[estilo] || 'st-imp';
-      const autor = obra.autor || 'Anónimo';
+      const autor = userMap[obra.user_id] || 'Anónimo';
 
       card.innerHTML = `
         <div class="gal-thumb" style="background-image:url('${obra.imagen_url}');background-size:cover;background-position:center;">
@@ -976,6 +1145,10 @@ async function loadObras() {
       `;
       galleryGrid.appendChild(card);
     });
+
+    // Re-apply active filter
+    const activeChip = document.querySelector('.filter-strip .fchip.active');
+    if (activeChip) filterGallery(activeChip.textContent.trim());
 
   } catch (err) {
     console.error("Error loading obras:", err);

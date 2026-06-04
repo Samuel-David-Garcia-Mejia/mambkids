@@ -702,7 +702,7 @@
             <path d="M15 18l-6-6 6-6" />
           </svg>
         </button>
-        <div id="gv-img"
+        <div id="gv-img" onclick="closeGvDrawer()"
           style="width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;">
         </div>
         <div class="result-info-bar">
@@ -710,21 +710,27 @@
             <h3 id="gv-title">Título</h3>
             <p id="gv-author">Autor</p>
           </div>
-          <button class="icon-btn light" onclick="goBack()" aria-label="Cerrar"><svg width="24" height="24"
+          <button class="icon-btn light" onclick="openGvDrawer()" aria-label="Opciones"><svg width="24" height="24"
               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <path d="M18 6L6 18M6 6l12 12" />
+              <path d="M18 15l-6-6-6 6" />
             </svg></button>
         </div>
       </div>
-      <div class="drawer open"
+      <div class="drawer" id="gv-drawer"
         style="position:absolute; bottom:0; background:var(--surface); border-radius: var(--r-xl) var(--r-xl) 0 0; padding:1.5rem; width:100%; z-index:50;">
         <div class="drawer-actions">
+          <button class="da-btn da-fav" id="gv-fav-btn" onclick="toggleGalleryViewerFav()"><svg width="20" height="20"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg><span class="fav-text-add">Añadir a Favoritos</span><span class="fav-text-remove">Quitar de
+              favoritos</span></button>
           <button class="da-btn da-save" onclick="showToast('Descargando imagen...')"><svg width="20" height="20"
               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>Descargar en celular</button>
+            </svg>Descargar obra</button>
           <button class="da-btn da-share" onclick="showToast('Abriendo opciones de compartir...')"><svg width="20"
               height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <circle cx="18" cy="5" r="3" />
@@ -753,6 +759,7 @@
       <div class="filter-strip">
         <button class="fchip active" onclick="activateFilter(this)">Todas</button>
         <button class="fchip" onclick="activateFilter(this)">Mis obras</button>
+        <button class="fchip" onclick="activateFilter(this)">Favoritos</button>
         <button class="fchip" onclick="activateFilter(this)">Impresionismo</button>
         <button class="fchip" onclick="activateFilter(this)">Remolinos</button>
         <button class="fchip" onclick="activateFilter(this)">Acuarela</button>
@@ -762,46 +769,6 @@
       </div>
       <div class="scroll-host">
         <div class="gallery-grid">
-          <div class="gal-card" onclick="openGalleryArtwork(this)">
-            <div class="gal-thumb gt1">
-              <div class="gal-fav"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 21l-8.5-8.5a5 5 0 0 1 7.07-7.07L12 7l1.43-1.57a5 5 0 0 1 7.07 7.07L12 21z" />
-                </svg></div>
-            </div>
-            <div class="gal-info"><strong>El Sol Naranja</strong><span>Valentina G.</span>
-              <div class="style-tag st-imp">Impresionismo</div>
-            </div>
-          </div>
-          <div class="gal-card" onclick="openGalleryArtwork(this)">
-            <div class="gal-thumb gt2"></div>
-            <div class="gal-info"><strong>Casa en el Cielo</strong><span>Carlos M.</span>
-              <div class="style-tag st-vg">Remolinos</div>
-            </div>
-          </div>
-          <div class="gal-card" onclick="openGalleryArtwork(this)">
-            <div class="gal-thumb gt3"></div>
-            <div class="gal-info"><strong>Dragón Azul</strong><span>Sofía R.</span>
-              <div class="style-tag st-wc">Acuarela</div>
-            </div>
-          </div>
-          <div class="gal-card" onclick="openGalleryArtwork(this)">
-            <div class="gal-thumb gt4"></div>
-            <div class="gal-info"><strong>Flores del Mar</strong><span>Tomas L.</span>
-              <div class="style-tag st-cb">Cubismo</div>
-            </div>
-          </div>
-          <div class="gal-card" onclick="openGalleryArtwork(this)">
-            <div class="gal-thumb gt5"></div>
-            <div class="gal-info"><strong>La Mariposa</strong><span>Camila P.</span>
-              <div class="style-tag st-imp">Impresionismo</div>
-            </div>
-          </div>
-          <div class="gal-card" onclick="openGalleryArtwork(this)">
-            <div class="gal-thumb gt6"></div>
-            <div class="gal-info"><strong>Mi Barranquilla</strong><span>Luis A.</span>
-              <div class="style-tag st-fa">Fantasía</div>
-            </div>
-          </div>
         </div>
         <div class="bottom-space"></div>
       </div>

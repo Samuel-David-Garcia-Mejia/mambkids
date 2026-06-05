@@ -96,6 +96,57 @@ npm run start    # servidor en http://localhost:3000
 
 ---
 
+## Flujo Lógico de la Aplicación
+
+### 1. Información del Museo
+![Información del Museo](capturas/01_informacion_museo.jpeg)
+
+### 2. Información del Museo (Vista adicional)
+![Información del Museo 2](capturas/01_informacion_museo_1.jpeg)
+
+### 3. Inicio de Sesión y Registro
+![Inicio de Sesión y Registro](capturas/03_inicio_sesion_registro.jpeg)
+
+### 4. Crear Cuenta
+![Crear Cuenta](capturas/04_crear_cuenta.jpeg)
+
+### 5. Guía Tutorial
+![Guía Tutorial](capturas/05_guia_tutorial.jpeg)
+
+### 6. Página Principal
+![Página Principal](capturas/06_pagina_principal.jpeg)
+
+### 7. Información de Ubicación y Horarios
+![Ubicación y Horarios](capturas/07_info_ubicacion_horarios.jpeg)
+
+### 8. Juego Piedra, Papel o Tijera
+![Juego](capturas/08_juego_piedra_papel_tijera.jpeg)
+
+### 9. Próximos Eventos
+![Próximos Eventos](capturas/09_proximos_eventos.jpeg)
+
+### 10. Crear Obra
+![Crear Obra](capturas/10_crear_obra.jpeg)
+
+### 11. Información de la Obra
+![Información de la Obra](capturas/11_info_obra.jpeg)
+
+### 12. Editar Obra con IA
+![Editar Obra IA](capturas/12_editar_obra_ia.jpeg)
+
+### 13. Publicar Obra
+![Publicar Obra](capturas/13_publicar_obra.jpeg)
+
+### 14. Galería de Obras
+![Galería de Obras](capturas/14_galeria_obras.jpeg)
+
+### 15. Perfil de Usuario
+![Perfil de Usuario](capturas/15_perfil_usuario.jpeg)
+
+### 16. Agendar Eventos
+![Agendar Eventos](capturas/16_eventos_agendarse.jpeg)
+---
+---
 ## Equipo
 
 | Nombre | Rol |

@@ -1,1 +1,0 @@
-Capturas de la aplicación

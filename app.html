@@ -12,6 +12,7 @@
     href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- TensorFlow y Teachable Machine -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose@0.8/dist/teachablemachine-pose.min.js"></script>
@@ -242,38 +243,11 @@
 
         <!-- ACHIEVEMENTS STRIP -->
         <div class="section-block">
-          <h2 class="section-title">Mis logros</h2>
-          <div class="ach-strip">
-            <div class="ach-item ach-earned" title="Primera obra">
-              <div class="ach-medal gold"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
-                  <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                </svg></div>
-              <span>Primera obra</span>
-            </div>
-            <div class="ach-item ach-earned" title="Explorador">
-              <div class="ach-medal silver"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M8 12l3 3 5-5" stroke-linecap="round" />
-                </svg></div>
-              <span>Explorador</span>
-            </div>
-            <div class="ach-item ach-locked" title="Maestro">
-              <div class="ach-medal locked"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
-                  <rect x="5" y="11" width="14" height="10" rx="2" />
-                  <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round" />
-                </svg></div><span>Maestro</span>
-            </div>
-            <div class="ach-item ach-locked" title="Coleccionista">
-              <div class="ach-medal locked"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2">
-                  <path d="M12 2l3 6.27 6.91 1-5 4.87 1.18 6.86L12 17.77l-6.09 3.23L7.09 14 2 9.27l6.91-1z" />
-                </svg></div><span>Coleccionista</span>
-            </div>
+          <div class="section-header">
+            <h2 class="section-title" style="margin:0;font-size:1rem;">Mis logros</h2>
+            <button class="see-all" onclick="verTodosLogros()">Ver todos</button>
           </div>
+          <div class="ach-strip" id="home-ach-strip"></div>
         </div>
 
         <div class="bottom-space"></div>
@@ -666,7 +640,7 @@
               <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
-            </svg>Guardar obra</button>
+            </svg>Publicar obra</button>
           <button class="da-btn da-share"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <circle cx="18" cy="5" r="3" />
@@ -706,12 +680,20 @@
           style="width:100%;height:100%;background-size:contain;background-position:center;background-repeat:no-repeat;">
         </div>
         <div class="result-info-bar">
-          <div class="result-info-text">
-            <h3 id="gv-title">Título</h3>
-            <p id="gv-author">Autor</p>
+          <div class="result-info-text" style="flex: 1;">
+            <div style="margin-bottom: var(--s1);">
+              <h3 id="gv-title" style="margin: 0; line-height: 1.2;">Título</h3>
+              <p id="gv-style-date" style="margin: 0; font-size: 0.85rem; color: rgba(255,255,255,.7);">Estilo · Fecha</p>
+            </div>
+            <div style="padding-top: var(--s1); border-top: 1px solid rgba(255,255,255,.15);">
+              <p style="margin: 0; font-size: 0.65rem; color: rgba(255,255,255,.4); text-transform: uppercase; letter-spacing: 0.05em;">Autor</p>
+              <p id="gv-author" style="margin: 0; font-weight: 600; color: #fff;">Nombre del autor</p>
+              <p id="gv-school-grade" style="margin: 0; font-size: 0.75rem; color: rgba(255,255,255,.55);">Grado · Colegio</p>
+            </div>
           </div>
-          <button class="icon-btn light" onclick="openGvDrawer()" aria-label="Opciones"><svg width="24" height="24"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <button class="icon-btn light" onclick="openGvDrawer()" aria-label="Opciones"
+            style="flex-shrink: 0; margin-left: var(--s3);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <path d="M18 15l-6-6-6 6" />
             </svg></button>
         </div>
@@ -725,13 +707,13 @@
                 d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg><span class="fav-text-add">Añadir a Favoritos</span><span class="fav-text-remove">Quitar de
               favoritos</span></button>
-          <button class="da-btn da-save" onclick="showToast('Descargando imagen...')"><svg width="20" height="20"
+          <button class="da-btn da-save" onclick="downloadGvObra()"><svg width="20" height="20"
               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>Descargar obra</button>
-          <button class="da-btn da-share" onclick="showToast('Abriendo opciones de compartir...')"><svg width="20"
+          <button class="da-btn da-share" onclick="shareGvObra()"><svg width="20"
               height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
@@ -769,6 +751,14 @@
       </div>
       <div class="scroll-host">
         <div class="gallery-grid">
+        </div>
+        <div class="gallery-empty" id="gallery-empty" style="display:none;text-align:center;padding:3rem 1rem;color:var(--ink-faint);">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="margin-bottom:1rem;opacity:0.4;">
+            <rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 2"/>
+            <path d="M9 12h6M12 9v6"/>
+          </svg>
+          <p style="font-weight:700;font-size:1rem;margin:0;">No has creado ninguna obra</p>
+          <p style="font-size:0.85rem;margin-top:0.3rem;">Tus obras aparecerán aquí cuando las crees</p>
         </div>
         <div class="bottom-space"></div>
       </div>
@@ -816,7 +806,7 @@
 ──────────────────────────────────────────────── -->
     <section class="screen" id="s-artists">
       <div class="screen-header">
-        <button class="icon-btn" onclick="nav('s-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+        <button class="icon-btn" onclick="nav('s-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M15 18l-6-6 6-6" />
           </svg></button>
@@ -1017,19 +1007,19 @@
             <h3>Ingeniería de Datos e IA</h3>
             <p>Forman a los profesionales que enseñan a las computadoras a entender el arte y aplicar estilos de
               pintura.</p>
-            <div class="prog-meta"><span>Pregrado · 10 semestres</span><span>Universidad del Norte</span></div>
+            <div class="prog-meta"><span>Pregrado · 8 semestres</span><span>Universidad Simón Bolívar</span></div>
           </div>
           <div class="prog-card pc-teal">
             <div class="prog-badge">IS</div>
             <h3>Ingeniería de Sistemas</h3>
             <p>Construyen las apps y sistemas digitales que conectan el museo con los niños y sus familias.</p>
-            <div class="prog-meta"><span>Pregrado · 10 semestres</span><span>Universidad del Norte</span></div>
+            <div class="prog-meta"><span>Pregrado · 9 semestres</span><span>Universidad Simón Bolívar</span></div>
           </div>
           <div class="prog-card pc-amber">
             <div class="prog-badge">MIA</div>
             <h3>Maestría en IA</h3>
             <p>Los investigadores que desarrollan los modelos de IA que transforman tus dibujos en arte real.</p>
-            <div class="prog-meta"><span>Posgrado · 4 semestres</span><span>Universidad del Norte</span></div>
+            <div class="prog-meta"><span>Posgrado · 3 semestres</span><span>Universidad Simón Bolívar</span></div>
           </div>
         </div>
         <div class="collab-card">
@@ -1042,6 +1032,14 @@
         </div>
         <div class="bottom-space"></div>
       </div>
+      <nav class="tab-bar">
+        <button class="tb-btn" onclick="nav('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12L12 4l9 8"/><rect x="5" y="12" width="14" height="9" rx="1"/></svg><span>Inicio</span></button>
+        <button class="tb-btn" onclick="nav('s-gallery')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg><span>Galeria</span></button>
+        <button class="tb-btn tb-center" onclick="nav('s-camera')"><div class="tb-fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="4"/><path d="M3 8h2l2-3h10l2 3h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z"/></svg></div><span>Crear</span></button>
+        <button class="tb-btn" onclick="nav('s-events')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Eventos</span></button>
+        <button class="tb-btn active" onclick="nav('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Perfil</span></button>
+        <button class="tb-btn" onclick="nav('s-game')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Jugar</span></button>
+      </nav>
     </section>
 
     <!-- ────────────────────────────────────────────────
@@ -1089,7 +1087,7 @@
 ──────────────────────────────────────────────── -->
     <section class="screen" id="s-about">
       <div class="screen-header">
-        <button class="icon-btn" onclick="nav('s-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+        <button class="icon-btn" onclick="nav('s-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M15 18l-6-6 6-6" />
           </svg></button>
@@ -1135,22 +1133,23 @@
           </div>
           <div class="about-block">
             <h3>Cómo llegar</h3>
-            <div class="map-placeholder">
-              <svg viewBox="0 0 300 140" fill="none" style="width:100%;height:auto;display:block;border-radius:10px;">
-                <rect width="300" height="140" fill="#E8EDF5" rx="10" />
-                <rect x="25" y="55" width="250" height="6" rx="3" fill="#B8C4D4" />
-                <rect x="90" y="20" width="6" height="100" rx="3" fill="#B8C4D4" />
-                <rect x="180" y="30" width="6" height="80" rx="3" fill="#B8C4D4" />
-                <circle cx="148" cy="70" r="16" fill="var(--coral)" opacity=".8" />
-                <circle cx="148" cy="70" r="7" fill="white" />
-              </svg>
-              <p style="font-size:.8rem;color:var(--ink-soft);text-align:center;margin-top:.5rem;">Carrera 56 #74-22,
-                Barranquilla, Colombia</p>
-            </div>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.4839803157585!2d-74.80371582494553!3d11.00227188916057!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef42d9cd7df8021%3A0xcda7dc7f7193b2a!2sMuseo%20de%20Arte%20Moderno%20de%20Barranquilla!5e0!3m2!1ses!2sco!4v1716389745124!5m2!1ses!2sco"
+              width="100%" height="200" style="border:0; border-radius: var(--r-md); display:block;" allowfullscreen="" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <p style="font-size:.8rem;color:var(--ink-soft);margin-top:.5rem;">Calle 76 #54-01 Ed. World Trade Center, L B3, Barranquilla, Colombia</p>
           </div>
         </div>
         <div class="bottom-space"></div>
       </div>
+      <nav class="tab-bar">
+        <button class="tb-btn" onclick="nav('s-home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12L12 4l9 8"/><rect x="5" y="12" width="14" height="9" rx="1"/></svg><span>Inicio</span></button>
+        <button class="tb-btn" onclick="nav('s-gallery')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 17l5-5 4 4 3-3 6 6"/></svg><span>Galeria</span></button>
+        <button class="tb-btn tb-center" onclick="nav('s-camera')"><div class="tb-fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="4"/><path d="M3 8h2l2-3h10l2 3h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z"/></svg></div><span>Crear</span></button>
+        <button class="tb-btn" onclick="nav('s-events')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Eventos</span></button>
+        <button class="tb-btn" onclick="nav('s-profile')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Perfil</span></button>
+        <button class="tb-btn" onclick="nav('s-game')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Jugar</span></button>
+      </nav>
     </section>
 
 
@@ -1303,7 +1302,6 @@
             <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg><span>Jugar</span></button>
       </nav>
-      </nav>
     </section>
 
 
@@ -1333,64 +1331,26 @@
           <p class="profile-grade">3ro · Colegio El Prado · Barranquilla</p>
           <div class="profile-stats">
             <div class="pstat"><strong>12</strong><span>Obras</span></div>
-            <div class="pstat"><strong>3</strong><span>Logros</span></div>
+            <div class="pstat"><strong id="stat-logros">0</strong><span>Logros</span></div>
             <div class="pstat"><strong>7</strong><span>Favoritas</span></div>
           </div>
+          <button class="btn btn-outline btn-sm" onclick="nav('s-edit-profile')" style="margin-top:0.75rem;font-size:0.8rem;">Editar perfil</button>
         </div>
 
         <!-- Achievements -->
         <div class="profile-section">
           <h3>Mis logros</h3>
-          <div class="ach-grid">
-            <div class="ach-cell ach-earned">
-              <div class="ach-m gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                    fill="currentColor" opacity=".25" />
-                </svg></div><span>Primera obra</span><small>Ganado</small>
-            </div>
-            <div class="ach-cell ach-earned">
-              <div class="ach-m silver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="9" fill="currentColor" opacity=".2" />
-                  <path d="M8 12l3 3 5-5" stroke-linecap="round" />
-                </svg></div><span>Explorador</span><small>Ganado</small>
-            </div>
-            <div class="ach-cell ach-earned">
-              <div class="ach-m bronze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="9" fill="currentColor" opacity=".2" /><text x="12" y="16"
-                    text-anchor="middle" font-size="9" fill="currentColor" stroke="none">5x</text>
-                </svg></div><span>5 obras</span><small>Ganado</small>
-            </div>
-            <div class="ach-cell ach-locked">
-              <div class="ach-m lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="5" y="11" width="14" height="10" rx="2" />
-                  <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round" />
-                </svg></div><span>Maestro</span><small>Bloqueado</small>
-            </div>
-            <div class="ach-cell ach-locked">
-              <div class="ach-m lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2l3 6.27 6.91 1-5 4.87 1.18 6.86L12 17.77l-6.09 3.23L7.09 14 2 9.27l6.91-1z" />
-                </svg></div><span>Coleccionista</span><small>Bloqueado</small>
-            </div>
-            <div class="ach-cell ach-locked">
-              <div class="ach-m lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 22c-4 0-8-4-8-10a8 8 0 0 1 16 0c0 6-4 10-8 10z" />
-                </svg></div><span>Artista Total</span><small>Bloqueado</small>
-            </div>
+          <div class="ach-grid" id="profile-ach-grid">
+            <div class="ach-loading-msg">Cargando logros...</div>
           </div>
         </div>
 
         <!-- My works preview -->
         <div class="profile-section">
           <div class="section-header">
-            <h3>Mis obras</h3><button class="see-all" onclick="nav('s-gallery')">Ver todas</button>
+            <h3>Mis obras</h3><button class="see-all" onclick="goToMyObras()">Ver todas</button>
           </div>
-          <div class="scroll-row">
-            <div class="pw-thumb gt1"></div>
-            <div class="pw-thumb gt3"></div>
-            <div class="pw-thumb gt5"></div>
-            <div class="pw-thumb gt2"></div>
-          </div>
+          <div class="scroll-row" id="profile-obras-row"></div>
         </div>
 
         <!-- Menu -->
@@ -1399,7 +1359,7 @@
             <button class="pmenu-item" onclick="nav('s-programs')"><svg width="18" height="18" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M12 2l8 4v6c0 5-3.5 9-8 10C7.5 21 4 17 4 12V6l8-4z" />
-              </svg>Programas academicos</button>
+              </svg>Programas académicos</button>
             <button class="pmenu-item" onclick="nav('s-artists')"><svg width="18" height="18" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <circle cx="9" cy="7" r="4" />
@@ -1408,7 +1368,7 @@
             <button class="pmenu-item pmenu-danger" onclick="openModal('m-logout')"><svg width="18" height="18"
                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-              </svg>Cerrar sesion</button>
+              </svg>Cerrar sesión</button>
           </div>
         </div>
         <div class="bottom-space"></div>
@@ -1764,6 +1724,84 @@
       </nav>
     </section>
 
+    <!-- ────────────────────────────────────────────────
+  SCREEN 18 · EDIT PROFILE
+──────────────────────────────────────────────── -->
+    <section class="screen" id="s-edit-profile">
+      <div class="screen-header">
+        <button class="icon-btn" onclick="goBack()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg></button>
+        <h2>Editar Perfil</h2>
+        <div style="width:36px"></div>
+      </div>
+      <div class="scroll-host">
+        <div class="signup-intro">
+          <div class="pinto pinto-sm"></div>
+          <p>Actualiza tu información personal</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Elige tu avatar</label>
+          <div class="avatar-grid" id="edit-avatar-grid">
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Felix')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Felix&backgroundColor=f5c842" alt="Avatar 1">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Aneka')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Aneka&backgroundColor=ffb6b9" alt="Avatar 2">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Jude')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Jude&backgroundColor=bde0fe" alt="Avatar 3">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Loki')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Loki&backgroundColor=a2d2ff" alt="Avatar 4">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Lily')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Lily&backgroundColor=cdb4db" alt="Avatar 5">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Mia')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Mia&backgroundColor=ffc8dd" alt="Avatar 6">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Leo')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Leo&backgroundColor=ffdfd3" alt="Avatar 7">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Nala')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Nala&backgroundColor=e2f0cb" alt="Avatar 8">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Oliver')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Oliver&backgroundColor=fdfd96" alt="Avatar 9">
+            </button>
+            <button class="avatar-chip" onclick="selectAvatar(this, 'Zoe')">
+              <img src="https://api.dicebear.com/9.x/micah/svg?seed=Zoe&backgroundColor=c1f0c1" alt="Avatar 10">
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tu nombre</label>
+          <input class="form-input" type="text" placeholder="Ej: Sofia" id="edit-nombre">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tu grado escolar</label>
+          <div class="grade-grid">
+            <button class="grade-chip" onclick="selectGrade(this,'1')">1ro</button>
+            <button class="grade-chip" onclick="selectGrade(this,'2')">2do</button>
+            <button class="grade-chip" onclick="selectGrade(this,'3')">3ro</button>
+            <button class="grade-chip" onclick="selectGrade(this,'4')">4to</button>
+            <button class="grade-chip" onclick="selectGrade(this,'5')">5to</button>
+            <button class="grade-chip" onclick="selectGrade(this,'6')">6to</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tu colegio</label>
+          <input class="form-input" type="text" placeholder="Ej: Colegio El Prado" id="edit-colegio">
+        </div>
+        <div class="form-footer">
+          <button class="btn btn-primary btn-full" onclick="handleEditProfile()">Guardar cambios</button>
+        </div>
+        <div class="bottom-space"></div>
+      </div>
+    </section>
+
     <!-- ═══════════════════════════════════
      MODALS (portalled outside screens)
 ═══════════════════════════════════ -->
@@ -1777,12 +1815,12 @@
             <polyline points="17 21 17 13 7 13 7 21" />
             <polyline points="7 3 7 8 15 8" />
           </svg></div>
-        <h3>Guardar obra</h3>
+        <h3>Publicar obra</h3>
         <p>Tu obra se guardará en la galería del MAMB y todos podrán verla.</p>
         <div class="modal-btns">
           <button class="btn btn-outline" onclick="closeModal('m-save')">Cancelar</button>
           <button class="btn btn-primary"
-            onclick="closeModal('m-save');nav('s-gallery');showToast('Obra guardada con exito')">Guardar</button>
+            onclick="closeModal('m-save');nav('s-gallery');showToast('Obra publicada con exito')">Publicar</button>
         </div>
       </div>
     </div>
@@ -1857,7 +1895,7 @@
         <div class="modal-handle"></div>
         <div class="confetti-host" id="confetti-host"></div>
         <div class="pinto pinto-md" style="margin:0 auto .75rem"></div>
-        <h3>Bienvenida, Sofía</h3>
+        <h3 id="welcome-greeting">Bienvenido/a</h3>
         <p>Tu cuenta de artista está lista. Ya puedes crear tu primera obra maestra.</p>
         <div class="modal-btns" style="flex-direction:column">
           <button class="btn btn-primary btn-full" onclick="closeModal('m-welcome');nav('s-tutorial')">Conocer la

@@ -160,7 +160,10 @@ function onScreenEnter(id) {
     case 's-result': resetResultDrawer(); break;
     case 's-tutorial': resetTutorial(); break;
     case 's-camera': setTimeout(initCamera, 300); break;
+    case 's-home': loadHomeLogros(); break;
     case 's-gallery': loadObras(); break;
+    case 's-profile': loadProfileData(); break;
+    case 's-edit-profile': loadEditProfileData(); break;
   }
 
   if (id !== 's-camera') {
@@ -477,6 +480,7 @@ function filterGallery(filter) {
   if (!galleryGrid) return;
 
   const cards = galleryGrid.querySelectorAll('.gal-card');
+  const emptyEl = document.getElementById('gallery-empty');
 
   const styleFilterMap = {
     'Impresionismo': ['impresionismo'],
@@ -487,15 +491,27 @@ function filterGallery(filter) {
     'Fantasía': ['fantasía', 'fantasia'],
   };
 
+  let visibleCount = 0;
+
   cards.forEach(card => {
     if (filter === 'Todas') {
       card.style.display = '';
+      visibleCount++;
       return;
     }
 
     if (filter === 'Mis obras') {
       const uid = card.getAttribute('data-user-id');
-      card.style.display = uid && uid === APP.currentUserId ? '' : 'none';
+      const show = uid && uid === APP.currentUserId;
+      card.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
+      return;
+    }
+
+    if (filter === 'Favoritos') {
+      const show = card.classList.contains('is-fav');
+      card.style.display = show ? '' : 'none';
+      if (show) visibleCount++;
       return;
     }
 
@@ -503,8 +519,18 @@ function filterGallery(filter) {
     if (!styleTag) { card.style.display = 'none'; return; }
     const cardStyle = styleTag.textContent.trim().toLowerCase();
     const matches = styleFilterMap[filter] || [filter.toLowerCase()];
-    card.style.display = matches.includes(cardStyle) ? '' : 'none';
+    const show = matches.includes(cardStyle);
+    card.style.display = show ? '' : 'none';
+    if (show) visibleCount++;
   });
+
+  if (emptyEl) {
+    if (filter === 'Mis obras' && visibleCount === 0) {
+      emptyEl.style.display = '';
+    } else {
+      emptyEl.style.display = 'none';
+    }
+  }
 }
 
 // ── FLASH TOGGLE ──────────────────────────────────
@@ -660,11 +686,30 @@ function initDragToScroll() {
 }
 
 // ── GALLERY VIEWER ────────────────────────────────
-function openGalleryArtwork(data) {
+async function openGalleryArtwork(data) {
+  APP.currentObra = data;
+  closeGvDrawer(); // Ensure the drawer starts closed
   const gvImg = document.getElementById('gv-img');
   const gvTitle = document.getElementById('gv-title');
   const gvAuthor = document.getElementById('gv-author');
+  const gvStyleDate = document.getElementById('gv-style-date');
+  const gvSchoolGrade = document.getElementById('gv-school-grade');
   if (!gvImg) return;
+
+  const gvFavBtn = document.getElementById('gv-fav-btn');
+  if (gvFavBtn) gvFavBtn.classList.remove('active', 'is-fav');
+
+  if (APP.currentUserId && data && data.id) {
+    window.supabaseClient.from('obras_favoritas')
+      .select('obra_id')
+      .eq('user_id', APP.currentUserId)
+      .eq('obra_id', data.id)
+      .then(({ data: fData }) => {
+        if (fData && fData.length > 0) {
+          if (gvFavBtn) gvFavBtn.classList.add('active', 'is-fav');
+        }
+      }).catch(err => console.error(err));
+  }
 
   if (typeof data === 'object' && data.querySelector) {
     // Called from static HTML card with `this`
@@ -678,16 +723,216 @@ function openGalleryArtwork(data) {
       gvImg.style.backgroundColor = cs.backgroundColor;
     }
     if (gvTitle) gvTitle.textContent = title;
-    if (gvAuthor) gvAuthor.textContent = author + (styleTag ? ' · ' + styleTag : '');
+    if (gvAuthor) gvAuthor.textContent = author;
+    if (gvStyleDate) gvStyleDate.textContent = styleTag || '';
+    if (gvSchoolGrade) gvSchoolGrade.textContent = '';
   } else {
     // Called from dynamic card with data object
     gvImg.style.backgroundImage = "url('" + data.imagen_url + "')";
     gvImg.style.backgroundColor = 'transparent';
     if (gvTitle) gvTitle.textContent = data.nombre || '';
-    if (gvAuthor) gvAuthor.textContent = (data.autor || 'Autor') + ' · ' + (data.estilo || '');
+
+    // Format date
+    let dateStr = '';
+    if (data.created_at) {
+      try {
+        const d = new Date(data.created_at);
+        dateStr = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+      } catch (_) { }
+    }
+
+    // Fetch perfil data
+    let colegio = '', grado = '', autor = 'Anónimo';
+    if (data.user_id) {
+      try {
+        const { data: perfil } = await window.supabaseClient.from('perfiles')
+          .select('nombre, colegio, grado')
+          .eq('id', data.user_id)
+          .single();
+        if (perfil) {
+          autor = perfil.nombre || 'Anónimo';
+          colegio = perfil.colegio || '';
+          grado = perfil.grado || '';
+        }
+      } catch (e) {
+        console.error('Error fetching perfil for gallery viewer:', e);
+      }
+    }
+
+    if (gvStyleDate) gvStyleDate.textContent = (data.estilo || '') + (dateStr ? ' · ' + dateStr : '');
+    if (gvSchoolGrade) gvSchoolGrade.textContent = [grado, colegio].filter(Boolean).join(' · ');
+    if (gvAuthor) gvAuthor.textContent = autor;
   }
 
   nav('s-gallery-viewer');
+}
+
+function openGvDrawer() {
+  const drawer = document.getElementById('gv-drawer');
+  if (drawer) drawer.classList.add('open');
+}
+
+function closeGvDrawer() {
+  const drawer = document.getElementById('gv-drawer');
+  if (drawer) drawer.classList.remove('open');
+}
+
+// ── GALLERY FAVORITES ─────────────────────────────
+function toggleGalOptions(e, btn) {
+  e.stopPropagation(); // prevent opening the artwork
+  const dropdown = btn.nextElementSibling;
+
+  // Close any other open dropdowns
+  document.querySelectorAll('.gal-dropdown.show').forEach(el => {
+    if (el !== dropdown) el.classList.remove('show');
+  });
+
+  dropdown.classList.toggle('show');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.gal-options')) {
+    document.querySelectorAll('.gal-dropdown.show').forEach(el => el.classList.remove('show'));
+  }
+});
+
+async function addObraFavorite(e, btn, obraId) {
+  e.stopPropagation(); // prevent opening artwork
+  if (!APP.currentUserId) {
+    showToast("Debes iniciar sesión para añadir a favoritos");
+    return;
+  }
+
+  // Toggle UI immediately for better UX
+  const isFav = btn.classList.toggle('is-fav');
+  const dropdown = btn.closest('.gal-dropdown');
+  if (dropdown) dropdown.classList.remove('show');
+
+  const card = btn.closest('.gal-card');
+  if (card) card.classList.toggle('is-fav', isFav);
+
+  // Also toggle the active class if it's the gallery viewer button
+  if (btn.id === 'gv-fav-btn') {
+    btn.classList.toggle('active', isFav);
+
+    // Sync the state with the corresponding card in the gallery grid
+    const gridCard = document.querySelector(`.gal-card[data-obra-id="${obraId}"]`);
+    if (gridCard) {
+      gridCard.classList.toggle('is-fav', isFav);
+      const dropItem = gridCard.querySelector('.gal-dropdown-item');
+      if (dropItem) dropItem.classList.toggle('is-fav', isFav);
+    }
+  } else {
+    // If clicked from the grid, sync with the gallery viewer if the artwork is open
+    if (APP.currentObra && String(APP.currentObra.id) === String(obraId)) {
+      const gvBtn = document.getElementById('gv-fav-btn');
+      if (gvBtn) {
+        gvBtn.classList.toggle('is-fav', isFav);
+        gvBtn.classList.toggle('active', isFav);
+      }
+    }
+  }
+
+  showToast(isFav ? "Añadida a favoritos" : "Eliminada de favoritos");
+
+  if (String(obraId).startsWith('mock')) return; // static HTML mock
+
+  try {
+    if (isFav) {
+      const { error } = await window.supabaseClient
+        .from('obras_favoritas')
+        .insert([{ user_id: APP.currentUserId, obra_id: obraId }]);
+      if (error && error.code !== '23505') throw error; // ignore duplicate key (23505)
+    } else {
+      const { error } = await window.supabaseClient
+        .from('obras_favoritas')
+        .delete()
+        .eq('user_id', APP.currentUserId)
+        .eq('obra_id', obraId);
+      if (error) throw error;
+    }
+    actualizarLogros(APP.currentUserId).catch(console.error);
+  } catch (err) {
+    console.error("Error toggling favorite:", err);
+    showToast("Error al actualizar favoritos");
+    // revert UI on error
+    btn.classList.toggle('is-fav', !isFav);
+    if (btn.id === 'gv-fav-btn') btn.classList.toggle('active', !isFav);
+  }
+}
+
+async function toggleGalleryViewerFav() {
+  if (!APP.currentObra || !APP.currentObra.id) {
+    showToast("No se puede añadir a favoritos (obra de prueba)");
+    return;
+  }
+  const btn = document.getElementById('gv-fav-btn');
+  const obraId = APP.currentObra.id;
+  await addObraFavorite({ stopPropagation: () => { } }, btn, obraId);
+}
+
+// ── GALLERY VIEWER — DESCARGAR Y COMPARTIR ────────
+async function downloadGvObra() {
+  const url = APP.currentObra?.imagen_url;
+  if (!url) { showToast('No hay imagen disponible'); return; }
+
+  showToast('Descargando...', 8000);
+  try {
+    const response = await fetch(url, { mode: 'cors' });
+    const blob = await response.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objUrl;
+    a.download = (APP.currentObra.nombre || 'obra-mamb') + '.jpg';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(objUrl);
+    showToast('¡Imagen guardada en tu dispositivo!');
+  } catch (err) {
+    // Fallback: abrir en pestaña nueva para guardar manualmente
+    console.warn('Download fetch failed, fallback a nueva pestaña:', err);
+    window.open(url, '_blank');
+    showToast('Mantén presionada la imagen para guardarla');
+  }
+}
+
+async function shareGvObra() {
+  const url = APP.currentObra?.imagen_url;
+  const titulo = APP.currentObra?.nombre || 'Mi obra en el MAMB';
+  if (!url) { showToast('No hay imagen para compartir'); return; }
+
+  const texto = `¡Mira mi obra "${titulo}" creada en el Museo de Arte Moderno de Barranquilla!`;
+
+  if (navigator.share) {
+    try {
+      // Intentar compartir como archivo (soportado en móvil para WhatsApp, etc.)
+      const response = await fetch(url, { mode: 'cors' });
+      const blob = await response.blob();
+      const file = new File([blob], titulo + '.jpg', { type: 'image/jpeg' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ title: titulo, text: texto, files: [file] });
+      } else {
+        await navigator.share({ title: titulo, text: texto, url: url });
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share error:', err);
+        _shareGvFallback(url, texto);
+      }
+    }
+  } else {
+    _shareGvFallback(url, texto);
+  }
+}
+
+function _shareGvFallback(url, texto) {
+  // Fallback en escritorio: abrir WhatsApp web con el link
+  const waUrl = 'https://wa.me/?text=' + encodeURIComponent(texto + '\n' + url);
+  window.open(waUrl, '_blank');
 }
 
 // ── KEYBOARD ──────────────────────────────────────
@@ -883,7 +1128,7 @@ function stopGame() {
 
 
 // ── SUPABASE UI UPDATES ───────────────────────────
-function updateUserUI(user) {
+async function updateUserUI(user) {
   console.log("Updating UI for user:", user);
   if (!user) return;
   APP.currentUserId = user.id;
@@ -939,6 +1184,99 @@ function updateUserUI(user) {
     profileAvatarWrap.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
     profileAvatarWrap.style.border = 'none';
   }
+
+  // 4. Cargar datos dinámicos del perfil y home
+  await loadProfileData();
+  loadHomeLogros();
+}
+
+// ── PROFILE DATA ──────────────────────────────────
+async function loadProfileData() {
+  if (!APP.currentUserId) return;
+
+  try {
+    // 1. Fetch perfil (colegio, grado)
+    const { data: perfil } = await window.supabaseClient.from('perfiles')
+      .select('colegio, grado')
+      .eq('id', APP.currentUserId)
+      .single();
+
+    const profileGrade = document.querySelector('#s-profile .profile-grade');
+    if (profileGrade && perfil) {
+      profileGrade.textContent = [perfil.grado, perfil.colegio].filter(Boolean).join(' · ');
+    }
+
+    // 2. Count obras
+    const { count: obrasCount } = await window.supabaseClient.from('obras')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', APP.currentUserId);
+
+    // 3. Count favoritas
+    const { count: favCount } = await window.supabaseClient.from('obras_favoritas')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', APP.currentUserId);
+
+    // 4. Update profile-stats
+    const statObras = document.querySelector('#s-profile .pstat:nth-child(1) strong');
+    const statFav = document.querySelector('#s-profile .pstat:nth-child(3) strong');
+    if (statObras) statObras.textContent = obrasCount || 0;
+    if (statFav) statFav.textContent = favCount || 0;
+
+    // 5. Load first 5 obras for scroll-row
+    await loadProfileObras();
+
+    // 6. Load logros grid
+    await loadLogros();
+
+  } catch (err) {
+    console.error("Error loading profile data:", err);
+  }
+}
+
+async function loadProfileObras() {
+  const scrollRow = document.getElementById('profile-obras-row');
+  if (!scrollRow) return;
+
+  scrollRow.innerHTML = '';
+
+  try {
+    const { data: obras } = await window.supabaseClient.from('obras')
+      .select('*')
+      .eq('user_id', APP.currentUserId)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (!obras || obras.length === 0) {
+      const emptyMsg = document.createElement('p');
+      emptyMsg.style.cssText = 'font-size:0.8rem;color:var(--ink-faint);padding:0.5rem 0;';
+      emptyMsg.textContent = 'No has creado ninguna obra';
+      scrollRow.appendChild(emptyMsg);
+      return;
+    }
+
+    obras.forEach(obra => {
+      const thumb = document.createElement('div');
+      thumb.className = 'pw-thumb';
+      thumb.style.cssText = 'background-image:url(\'' + obra.imagen_url + '\');background-size:cover;background-position:center;cursor:pointer;';
+      thumb.onclick = () => openGalleryArtwork(obra);
+      scrollRow.appendChild(thumb);
+    });
+  } catch (err) {
+    console.error('Error loading profile obras:', err);
+  }
+}
+
+function goToMyObras() {
+  nav('s-gallery');
+  setTimeout(() => {
+    const chips = document.querySelectorAll('#s-gallery .filter-strip .fchip');
+    for (const chip of chips) {
+      if (chip.textContent.trim() === 'Mis obras') {
+        activateFilter(chip);
+        break;
+      }
+    }
+  }, 150);
 }
 
 
@@ -1021,8 +1359,116 @@ async function handleSignup() {
         }
       ]);
     if (perfilError) console.error('Error creating profile:', perfilError);
+    const greeting = document.getElementById('welcome-greeting');
+    if (greeting) greeting.textContent = `Bienvenido/a, ${nombre}`;
     showToast('¡Cuenta creada con éxito!');
     openModal('m-welcome');
+  }
+}
+
+// ── EDIT PROFILE ──────────────────────────────────
+async function loadEditProfileData() {
+  if (!APP.currentUserId) return;
+
+  try {
+    const { data: perfil } = await window.supabaseClient.from('perfiles')
+      .select('nombre, colegio, grado, avatar')
+      .eq('id', APP.currentUserId)
+      .single();
+
+    if (!perfil) return;
+
+    // Pre-fill name
+    const nombreInput = document.getElementById('edit-nombre');
+    if (nombreInput) nombreInput.value = perfil.nombre || '';
+
+    // Pre-fill school
+    const colegioInput = document.getElementById('edit-colegio');
+    if (colegioInput) colegioInput.value = perfil.colegio || '';
+
+    // Pre-select grade
+    if (perfil.grado) {
+      const gradeChips = document.querySelectorAll('#s-edit-profile .grade-chip');
+      gradeChips.forEach(chip => {
+        if (chip.textContent.trim() === perfil.grado) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
+
+    // Pre-select avatar
+    if (perfil.avatar) {
+      const avatarChips = document.querySelectorAll('#s-edit-profile .avatar-chip');
+      avatarChips.forEach(chip => {
+        const img = chip.querySelector('img');
+        if (img && img.src === perfil.avatar) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Error loading edit profile data:', err);
+  }
+}
+
+async function handleEditProfile() {
+  if (!APP.currentUserId) {
+    showToast('Debes iniciar sesión para editar tu perfil');
+    return;
+  }
+
+  const nombre = document.getElementById('edit-nombre').value;
+  const colegio = document.getElementById('edit-colegio').value;
+  const gradoEl = document.querySelector('#s-edit-profile .grade-chip.active');
+  const grado = gradoEl ? gradoEl.textContent : '';
+  const avatarEl = document.querySelector('#s-edit-profile .avatar-chip.active img');
+  const avatar = avatarEl ? avatarEl.src : '';
+
+  if (!nombre || !colegio || !grado || !avatar) {
+    showToast('Por favor completa todos los campos');
+    return;
+  }
+
+  showToast('Guardando cambios...', 5000);
+
+  try {
+    // Update perfiles table
+    const { error: perfilError } = await window.supabaseClient.from('perfiles')
+      .update({
+        nombre: nombre,
+        colegio: colegio,
+        grado: grado,
+        avatar: avatar
+      })
+      .eq('id', APP.currentUserId);
+
+    if (perfilError) throw perfilError;
+
+    // Update auth metadata
+    const { error: metaError } = await window.supabaseClient.auth.updateUser({
+      data: {
+        nombre: nombre,
+        colegio: colegio,
+        grado: grado,
+        avatar: avatar
+      }
+    });
+
+    if (metaError) throw metaError;
+
+    showToast('Perfil actualizado con éxito');
+
+    // Refresh UI and go back to profile
+    await updateUserUI((await window.supabaseClient.auth.getSession()).data.session?.user);
+    goBack();
+
+  } catch (err) {
+    console.error('Error updating profile:', err);
+    showToast('Error al actualizar el perfil: ' + err.message);
   }
 }
 
@@ -1078,6 +1524,7 @@ async function saveObra() {
 
     if (dbError) throw dbError;
 
+    await actualizarLogros(session.user.id);
     showToast("¡Obra guardada con éxito!");
     closeDrawer();
     nav('s-gallery');
@@ -1113,6 +1560,15 @@ async function loadObras() {
       if (perfiles) perfiles.forEach(p => userMap[p.id] = p.nombre);
     }
 
+    // Fetch user favorites to set initial state
+    const userFavs = new Set();
+    if (APP.currentUserId) {
+      const { data: favs } = await window.supabaseClient.from('obras_favoritas')
+        .select('obra_id')
+        .eq('user_id', APP.currentUserId);
+      if (favs) favs.forEach(f => userFavs.add(String(f.obra_id)));
+    }
+
     const styleMap = {
       'impresionismo': 'st-imp',
       'remolinos': 'st-vg',
@@ -1124,9 +1580,11 @@ async function loadObras() {
 
     obras.forEach(obra => {
       const card = document.createElement('div');
-      card.className = 'gal-card';
+      const isFav = userFavs.has(String(obra.id));
+      card.className = 'gal-card' + (isFav ? ' is-fav' : '');
       card.setAttribute('data-dynamic', '');
       card.setAttribute('data-user-id', obra.user_id || '');
+      card.setAttribute('data-obra-id', obra.id || '');
       card.onclick = () => openGalleryArtwork(obra);
 
       const estilo = (obra.estilo || '').toLowerCase();
@@ -1138,9 +1596,21 @@ async function loadObras() {
           <div class="gal-fav"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21l-8.5-8.5a5 5 0 0 1 7.07-7.07L12 7l1.43-1.57a5 5 0 0 1 7.07 7.07L12 21z"/></svg></div>
         </div>
         <div class="gal-info">
-          <strong>${obra.nombre}</strong>
-          <span>${autor}</span>
-          <div class="style-tag ${stClass}">${obra.estilo || ''}</div>
+          <div class="gal-info-text">
+            <strong>${obra.nombre}</strong>
+            <span>${autor}</span>
+            <div class="style-tag ${stClass}">${obra.estilo || ''}</div>
+          </div>
+          <div class="gal-options">
+            <button class="gal-opt-btn" onclick="toggleGalOptions(event, this)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+            </button>
+            <div class="gal-dropdown">
+              <button class="gal-dropdown-item ${isFav ? 'is-fav' : ''}" onclick="addObraFavorite(event, this, '${obra.id}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> <span class="fav-text-add">Añadir a Favoritos</span><span class="fav-text-remove">Quitar de favoritos</span>
+              </button>
+            </div>
+          </div>
         </div>
       `;
       galleryGrid.appendChild(card);
@@ -1152,6 +1622,237 @@ async function loadObras() {
 
   } catch (err) {
     console.error("Error loading obras:", err);
+  }
+}
+
+// ── LOGROS (HOME STRIP) ───────────────────────────
+async function loadHomeLogros() {
+  const strip = document.getElementById('home-ach-strip');
+  if (!strip) return;
+
+  try {
+    const { data: logros } = await window.supabaseClient
+      .from('logros')
+      .select('id, nombre, icon_name')
+      .order('created_at', { ascending: true })
+      .limit(4);
+
+    if (!logros || logros.length === 0) { strip.innerHTML = ''; return; }
+
+    const logroMap = {};
+    if (APP.currentUserId) {
+      const ids = logros.map(l => l.id);
+      const { data: userLogros } = await window.supabaseClient
+        .from('usuario_logros')
+        .select('logro_id, cumple_requisito')
+        .eq('user_id', APP.currentUserId)
+        .in('logro_id', ids);
+      (userLogros || []).forEach(ul => { logroMap[ul.logro_id] = ul.cumple_requisito; });
+    }
+
+    strip.innerHTML = '';
+    logros.forEach(logro => {
+      const earned = logroMap[logro.id] === true;
+      const biIcon = LOGRO_ICON_MAP[logro.icon_name] || 'bi-trophy';
+      const item = document.createElement('div');
+      item.className = `ach-item ${earned ? 'ach-earned' : 'ach-locked'}`;
+      item.title = logro.nombre;
+      item.innerHTML = `
+        <div class="ach-medal"><i class="bi ${biIcon}" style="font-size:1.3rem;line-height:1;"></i></div>
+        <span>${logro.nombre}</span>
+      `;
+      strip.appendChild(item);
+    });
+
+  } catch (err) {
+    console.error('[loadHomeLogros] Error:', err);
+  }
+}
+
+function verTodosLogros() {
+  nav('s-profile');
+  setTimeout(() => {
+    const logrosSection = document.querySelector('#s-profile .profile-section:has(#profile-ach-grid)');
+    if (!logrosSection) return;
+    logrosSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    logrosSection.classList.add('logros-highlight');
+    logrosSection.addEventListener('animationend', () => logrosSection.classList.remove('logros-highlight'), { once: true });
+  }, 420);
+}
+
+// ── LOGROS (PERFIL) ───────────────────────────────
+const LOGRO_ICON_MAP = {
+  'box':                'bi-box',
+  'sparkles':           'bi-stars',
+  'wind':               'bi-wind',
+  'bookmark':           'bi-bookmark-fill',
+  'gallery-horizontal': 'bi-images',
+  'heart':              'bi-heart-fill',
+  'compass':            'bi-compass',
+  'palette':            'bi-palette-fill',
+  'brush':              'bi-brush-fill',
+  'droplets':           'bi-droplet-half',
+};
+
+async function loadLogros() {
+  const grid = document.getElementById('profile-ach-grid');
+  if (!grid) return;
+
+  try {
+    const { data: logros, error } = await window.supabaseClient
+      .from('logros')
+      .select('id, nombre, condicion, icon_name, requisito')
+      .order('created_at', { ascending: true });
+
+    if (error || !logros) { grid.innerHTML = ''; return; }
+
+    const logroMap = {};
+    let earnedCount = 0;
+
+    if (APP.currentUserId) {
+      const { data: usuarioLogros } = await window.supabaseClient
+        .from('usuario_logros')
+        .select('logro_id, conteo, cumple_requisito')
+        .eq('user_id', APP.currentUserId);
+
+      (usuarioLogros || []).forEach(ul => {
+        logroMap[ul.logro_id] = ul;
+        if (ul.cumple_requisito) earnedCount++;
+      });
+    }
+
+    const statLogros = document.getElementById('stat-logros');
+    if (statLogros) statLogros.textContent = earnedCount;
+
+    grid.innerHTML = '';
+    logros.forEach(logro => {
+      const ul = logroMap[logro.id];
+      const earned = ul && ul.cumple_requisito;
+      const conteo = ul ? ul.conteo : 0;
+      const biIcon = LOGRO_ICON_MAP[logro.icon_name] || 'bi-trophy';
+
+      const cell = document.createElement('div');
+      cell.className = `ach-cell ${earned ? 'ach-earned' : 'ach-locked'}`;
+      cell.title = logro.condicion;
+      cell.innerHTML = `
+        <div class="ach-m ${earned ? 'ach-m-earned' : 'ach-m-locked'}">
+          <i class="bi ${biIcon}"></i>
+        </div>
+        <span>${logro.nombre}</span>
+        <small>${earned ? 'Ganado' : `${conteo}/${logro.requisito}`}</small>
+      `;
+      grid.appendChild(cell);
+    });
+
+  } catch (err) {
+    console.error('[loadLogros] Error:', err);
+    grid.innerHTML = '';
+  }
+}
+
+// ── LOGROS ────────────────────────────────────────
+async function actualizarLogros(userId) {
+  if (!userId) return;
+  try {
+    const { data: logros, error: logrosError } = await window.supabaseClient
+      .from('logros')
+      .select('id, nombre, condicion, requisito');
+    if (logrosError) { console.error('[logros] Error al leer logros:', logrosError); return; }
+    if (!logros || logros.length === 0) { console.warn('[logros] La tabla logros está vacía o sin acceso'); return; }
+
+    const { data: obras, error: obrasError } = await window.supabaseClient
+      .from('obras').select('estilo').eq('user_id', userId);
+    if (obrasError) console.warn('[logros] Error al leer obras:', obrasError);
+
+    const { count: favCount, error: favError } = await window.supabaseClient
+      .from('obras_favoritas')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    if (favError) console.warn('[logros] Error al leer favoritas:', favError);
+
+    const totalObras = obras ? obras.length : 0;
+    const totalFavs = favCount || 0;
+    const styleCount = {};
+    const distinctStyles = new Set();
+    (obras || []).forEach(o => {
+      const e = (o.estilo || '').toLowerCase();
+      styleCount[e] = (styleCount[e] || 0) + 1;
+      if (e) distinctStyles.add(e);
+    });
+
+    const { data: existentes, error: existentesError } = await window.supabaseClient
+      .from('usuario_logros')
+      .select('logro_id, cumple_requisito')
+      .eq('user_id', userId);
+    if (existentesError) console.warn('[logros] Error al leer usuario_logros:', existentesError);
+    const existentesMap = {};
+    (existentes || []).forEach(ul => { existentesMap[ul.logro_id] = ul.cumple_requisito; });
+
+    const upserts = [];
+    const nuevosLogros = [];
+
+    for (const logro of logros) {
+      const cond = logro.condicion.toLowerCase();
+      let conteo = 0;
+
+      if (cond.includes('estilos distintos')) {
+        conteo = distinctStyles.size;
+      } else if (cond.includes('favoritos')) {
+        conteo = totalFavs;
+      } else if (cond.includes('cubismo')) {
+        conteo = styleCount['cubismo'] || 0;
+      } else if (cond.includes('remolinos')) {
+        conteo = styleCount['vangogh'] || 0;
+      } else if (cond.includes('impresionismo')) {
+        conteo = styleCount['impresionismo'] || 0;
+      } else if (cond.includes('acuarela')) {
+        conteo = styleCount['acuarela'] || 0;
+      } else if (cond.includes('publica')) {
+        conteo = totalObras;
+      }
+
+      const yaCompletado = existentesMap[logro.id] === true;
+      const cumpleRequisito = yaCompletado || conteo >= logro.requisito;
+
+      if (!yaCompletado && conteo >= logro.requisito) {
+        nuevosLogros.push(logro.nombre || 'Logro desbloqueado');
+      }
+
+      upserts.push({
+        user_id: userId,
+        logro_id: logro.id,
+        conteo: conteo,
+        cumple_requisito: cumpleRequisito,
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    // Separar en INSERT (filas nuevas) y UPDATE (filas existentes)
+    const porInsertar = upserts.filter(r => !Object.prototype.hasOwnProperty.call(existentesMap, r.logro_id));
+    const porActualizar = upserts.filter(r => Object.prototype.hasOwnProperty.call(existentesMap, r.logro_id));
+
+    if (porInsertar.length > 0) {
+      const { error: insError } = await window.supabaseClient
+        .from('usuario_logros')
+        .insert(porInsertar);
+      if (insError) console.error('[logros] Error en INSERT:', insError);
+    }
+
+    for (const row of porActualizar) {
+      const { error: updError } = await window.supabaseClient
+        .from('usuario_logros')
+        .update({ conteo: row.conteo, cumple_requisito: row.cumple_requisito, updated_at: row.updated_at })
+        .eq('user_id', row.user_id)
+        .eq('logro_id', row.logro_id);
+      if (updError) console.error('[logros] Error en UPDATE logro_id=' + row.logro_id + ':', updError);
+    }
+
+    nuevosLogros.forEach((nombre, i) => {
+      setTimeout(() => showToast(`¡Logro desbloqueado: ${nombre}!`, 4000), i * 1500);
+    });
+
+  } catch (err) {
+    console.error('[logros] Error inesperado:', err);
   }
 }
 
@@ -1178,5 +1879,11 @@ window.saveObra = saveObra;
 window.toggleDevNav = toggleDevNav;
 window.goBack = goBack;
 window.openGalleryArtwork = openGalleryArtwork;
+window.goToMyObras = goToMyObras;
+window.loadProfileData = loadProfileData;
+window.verTodosLogros = verTodosLogros;
 window.handleLogin = handleLogin;
 window.handleSignup = handleSignup;
+window.handleEditProfile = handleEditProfile;
+window.downloadGvObra = downloadGvObra;
+window.shareGvObra = shareGvObra;

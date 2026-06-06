@@ -17,7 +17,7 @@ function HomepageHeader() {
           </Link>
           <Link
             className="button button--outline button--lg"
-            href="https://calm-desert-027745d10.7.azurestaticapps.net/"
+            href="https://mambkids.online"
             style={{ marginLeft: '1rem' }}>
             Ver la app
           </Link>

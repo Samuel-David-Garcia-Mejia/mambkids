@@ -28,7 +28,7 @@ logros (catálogo estático)
 
 ### `perfiles`
 
-![Registros reales de la tabla perfiles en Supabase](/img/database/01_tabla_perfiles.jpg)
+![Registros reales de la tabla perfiles en Supabase](/static/img/database/01_tabla_perfiles.jpg)
 
 Extiende el usuario de Supabase Auth con datos del perfil escolar.
 
@@ -45,7 +45,7 @@ Extiende el usuario de Supabase Auth con datos del perfil escolar.
 
 ### `obras`
 
-![Registros reales de la tabla obras en Supabase](/img/database/02_tabla_obras.jpg)
+![Registros reales de la tabla obras en Supabase](/static/img/database/02_tabla_obras.jpg)
 
 Almacena las obras creadas por los usuarios.
 
@@ -65,7 +65,7 @@ Almacena las obras creadas por los usuarios.
 
 ### `obras_favoritas`
 
-![Registros reales de la tabla obras_favoritas en Supabase](/img/database/03_tabla_obras_favoritas.jpg)
+![Registros reales de la tabla obras_favoritas en Supabase](/static/img/database/03_tabla_obras_favoritas.jpg)
 
 Relación muchos-a-muchos entre usuarios y obras que marcaron como favoritas.
 
@@ -78,7 +78,7 @@ Relación muchos-a-muchos entre usuarios y obras que marcaron como favoritas.
 
 ### `logros`
 
-![Registros reales de la tabla logros en Supabase](/img/database/04_tabla_logros.jpg)
+![Registros reales de la tabla logros en Supabase](/static/img/database/04_tabla_logros.jpg)
 
 Catálogo estático de logros disponibles en la aplicación.
 
@@ -110,7 +110,7 @@ Catálogo estático de logros disponibles en la aplicación.
 
 ### `usuario_logros`
 
-![Registros reales de la tabla usuario_logros en Supabase](/img/database/05_tabla_usuarios_logros.jpg)
+![Registros reales de la tabla usuario_logros en Supabase](/static/img/database/05_tabla_usuarios_logros.jpg)
 
 Registra el progreso de cada usuario hacia cada logro.
 

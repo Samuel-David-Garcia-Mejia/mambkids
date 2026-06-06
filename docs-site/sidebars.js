@@ -20,7 +20,9 @@ const sidebars = {
         'funcionalidades/artistas',
       ],
     },
+    'flujo',
     'supabase',
+    'despliegue',
     'equipo',
   ],
 };

@@ -28,7 +28,7 @@ logros (catálogo estático)
 
 ### `perfiles`
 
-![Registros reales de la tabla perfiles en Supabase](static/img/database/01_tabla_perfiles.jpg)
+![Registros reales de la tabla perfiles en Supabase](/img/database/01_tabla_perfiles.jpg)
 
 Extiende el usuario de Supabase Auth con datos del perfil escolar.
 

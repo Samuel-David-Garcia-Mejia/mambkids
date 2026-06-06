@@ -58,7 +58,7 @@ const config = {
             label: 'Documentación',
           },
           {
-            href: 'https://calm-desert-027745d10.7.azurestaticapps.net/',
+            href: 'https://mambkids.online',
             label: 'Ver App',
             position: 'left',
           },
@@ -85,7 +85,7 @@ const config = {
             items: [
               {
                 label: 'App en producción (Azure)',
-                href: 'https://calm-desert-027745d10.7.azurestaticapps.net/',
+                href: 'https://mambkids.online',
               },
               {
                 label: 'Repositorio GitHub',
@@ -102,11 +102,11 @@ const config = {
             items: [
               {
                 label: 'MAMB — Museo de Arte Moderno de Barranquilla',
-                href: 'https://calm-desert-027745d10.7.azurestaticapps.net/',
+                href: 'https://www.instagram.com/mambq_museo/',
               },
               {
                 label: 'Universidad Simón Bolívar',
-                href: 'https://www.unisimonbolivar.edu.co',
+                href: 'https://unisimon.edu.co',
               },
             ],
           },

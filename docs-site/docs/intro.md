@@ -32,7 +32,7 @@ sidebar_position: 1
 
 ### Links
 
-- 🌐 **App en producción:** [calm-desert-027745d10.7.azurestaticapps.net](https://calm-desert-027745d10.7.azurestaticapps.net/)
+- 🌐 **App en producción:** [mambkids.online](https://mambkids.online)
 - 💻 **Repositorio GitHub:** [github.com/Samuel-David-Garcia-Mejia/mambkids](https://github.com/Samuel-David-Garcia-Mejia/mambkids)
 
 ---

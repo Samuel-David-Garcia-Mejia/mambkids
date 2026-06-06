@@ -30,9 +30,13 @@ Responsable de la dirección y visión general del proyecto, diseño de la arqui
 
 Colaborador en el desarrollo de funcionalidades, pruebas e integración de componentes de la aplicación.
 
+[![GitHub](https://img.shields.io/badge/GitHub-Cantillo--Nadin-181717?logo=github)](https://github.com/Cantillo-Nadin)
+
 ### Valeria Melissa Patrón García — Desarrolladora
 
 Colaboradora en el desarrollo de funcionalidades, pruebas y documentación de la aplicación.
+
+[![GitHub](https://img.shields.io/badge/GitHub-vpatron1-181717?logo=github)](https://github.com/vpatron1)
 
 ---
 

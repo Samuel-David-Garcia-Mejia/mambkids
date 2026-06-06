@@ -50,12 +50,12 @@ Desde el portal de Azure:
 
 1. Ir a la Static Web App → sección **Custom domains**.
 
-![Vista de la Static Web App en Azure con la sección Custom domains](/static/img/evidencias_dominio/01_azure_static_web_app.jpg)
+![Vista de la Static Web App en Azure con la sección Custom domains](docs-site/static/img/evidencias_dominio/01_azure_static_web_app.jpg)
 
 2. Hacer clic en **Add** e ingresar `mambkids.online`.
 3. Azure genera los valores de validación: un registro **TXT** y un registro **CNAME**.
 
-![Valores TXT y CNAME generados por Azure](/static/img/evidencias_dominio/02_obtener_TXT_y_CNAME.jpg)
+![Valores TXT y CNAME generados por Azure](docs-site/static/img/evidencias_dominio/02_obtener_TXT_y_CNAME.jpg)
 
 **4. Configuración en Namecheap**
 
@@ -63,7 +63,7 @@ Desde el portal de Azure:
 2. Ir a la pestaña **Advanced DNS**.
 3. Agregar los dos registros proporcionados por Azure:
 
-![Configuración de registros DNS en Namecheap](/static/img/evidencias_dominio/03_namecheap_dominio.jpg)
+![Configuración de registros DNS en Namecheap](docs-site/static/img/evidencias_dominio/03_namecheap_dominio.jpg)
 
 | Tipo | Host | Valor |
 |---|---|---|
@@ -76,11 +76,11 @@ Desde el portal de Azure:
 
 - Azure verifica los registros DNS automáticamente (puede tardar entre unos minutos y 48 horas según la propagación).
 
-![Panel de dominios personalizados en Azure mostrando validación](/static/img/evidencias_dominio/04_azure_dominios.jpg)
+![Panel de dominios personalizados en Azure mostrando validación](docs-site/static/img/evidencias_dominio/04_azure_dominios.jpg)
 
 - Una vez validado, Azure activa HTTPS automáticamente para el dominio personalizado.
 
-![Aplicación accesible desde mambkids.online con HTTPS activo](/static/img/evidencias_dominio/05_mambkids_online.jpg)
+![Aplicación accesible desde mambkids.online con HTTPS activo](docs-site/static/img/evidencias_dominio/05_mambkids_online.jpg)
 
 ---
 

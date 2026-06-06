@@ -17,6 +17,20 @@ Los usuarios pueden fotografiar sus obras, aplicarles filtros artísticos simula
 
 ---
 
+## Funcionalidades
+
+| Módulo | Descripción |
+|---|---|
+| **Cámara** | Captura fotos con `getUserMedia`, flash visual, cuadrícula de encuadre, personaje guía "Pinto" |
+| **Filtros IA** | 6 estilos artísticos (Impresionismo, Van Gogh, Acuarela, Cubismo, Puntillismo, Fantasía) aplicados con Canvas API |
+| **Galería** | Galería comunitaria y personal; visor con descarga de imagen y compartir por WhatsApp/email |
+| **Logros** | Sistema de achievements con 8 logros desbloqueables según la actividad del usuario |
+| **Perfil** | Estadísticas personales, obras publicadas, logros ganados |
+| **Artistas** | Sección educativa con artistas destacados vinculados al MAMB |
+| **Juego RPS** | Piedra, papel o tijera con detección de poses en tiempo real usando TensorFlow.js + Teachable Machine |
+
+---
+
 ## Capturas de pantalla
 
 ### 1. Información del Museo
@@ -66,20 +80,6 @@ Los usuarios pueden fotografiar sus obras, aplicarles filtros artísticos simula
 
 ### 16. Agendar Eventos
 ![Agendar Eventos](docs-site/static/img/flujo/16_eventos_agendarse.jpeg)
-
----
-
-## Funcionalidades
-
-| Módulo | Descripción |
-|---|---|
-| **Cámara** | Captura fotos con `getUserMedia`, flash visual, cuadrícula de encuadre, personaje guía "Pinto" |
-| **Filtros IA** | 6 estilos artísticos (Impresionismo, Van Gogh, Acuarela, Cubismo, Puntillismo, Fantasía) aplicados con Canvas API |
-| **Galería** | Galería comunitaria y personal; visor con descarga de imagen y compartir por WhatsApp/email |
-| **Logros** | Sistema de achievements con 8 logros desbloqueables según la actividad del usuario |
-| **Perfil** | Estadísticas personales, obras publicadas, logros ganados |
-| **Artistas** | Sección educativa con artistas destacados vinculados al MAMB |
-| **Juego RPS** | Piedra, papel o tijera con detección de poses en tiempo real usando TensorFlow.js + Teachable Machine |
 
 ---
 
